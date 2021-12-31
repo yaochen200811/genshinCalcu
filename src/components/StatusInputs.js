@@ -1,227 +1,46 @@
 import styled from 'styled-components';
 
+const characterOrWeaponEntries = ['基础攻击', '攻击百分比', '暴击率', '暴击伤害', '伤害加成', '元素精通'];
+const artifactEntries = ['攻击', '攻击百分比', '暴击率', '暴击伤害', '伤害加成', '元素精通', '元素反应加成'];
+const simpleModeEntries = ['攻击力', '暴击率', '暴击伤害', '伤害加成', '元素精通'];
+const modifierEntries = ['基础倍率', '倍率加成'];
+const monsterEntries = ['抗性', '减抗', '角色等级', '怪物等级', '减防'];
+
 const StatusInputs = ({ type, values, setValues, computeDamage }) => {
-	const updateStatus = (id, event) => {
-		let status = values.slice();
-		status[id] = event.target.value;
-		setValues(status);
-		computeDamage();
+	const updateStatus = (i, event) => {
+		const newStatus = [...values];
+		newStatus[i] = event.target.value;
+		setValues(newStatus);
 	};
 
-	if (type === 'character' || type === 'weapon') {
-		return (
-			<>
-				<InputContainer>
-					基础攻击：
+	const entries =
+		type === 'character' || type === 'weapon'
+			? characterOrWeaponEntries
+			: type === 'artifact' || type === 'extra'
+			? artifactEntries
+			: type === 'modifier'
+			? modifierEntries
+			: type === 'monster'
+			? monsterEntries
+			: type === 'simple'
+			? simpleModeEntries
+			: [];
+
+	return (
+		<>
+			{entries.map((entry, i) => (
+				<InputContainer key={i}>
+					{entry}：
 					<StyledInput
-						value={values[0]}
+						value={values[i]}
 						onChange={(event) => {
-							updateStatus(0, event);
+							updateStatus(i, event);
 						}}
 					/>
 				</InputContainer>
-				<InputContainer>
-					攻击百分比：
-					<StyledInput
-						value={values[1]}
-						onChange={(event) => {
-							updateStatus(1, event);
-						}}
-					/>
-					%
-				</InputContainer>
-				<InputContainer>
-					暴击率：
-					<StyledInput
-						value={values[2]}
-						onChange={(event) => {
-							updateStatus(2, event);
-						}}
-					/>
-					%
-				</InputContainer>
-				<InputContainer>
-					暴击伤害：
-					<StyledInput
-						value={values[3]}
-						onChange={(event) => {
-							updateStatus(3, event);
-						}}
-					/>
-					%
-				</InputContainer>
-				<InputContainer>
-					伤害加成：
-					<StyledInput
-						value={values[4]}
-						onChange={(event) => {
-							updateStatus(4, event);
-						}}
-					/>
-					%
-				</InputContainer>
-				<InputContainer>
-					元素精通：
-					<StyledInput
-						value={values[5]}
-						onChange={(event) => {
-							updateStatus(5, event);
-						}}
-					/>
-				</InputContainer>
-			</>
-		);
-	} else if (type === 'artifact' || type === 'extra') {
-		return (
-			<>
-				<InputContainer>
-					攻击：
-					<StyledInput
-						value={values[0]}
-						onChange={(event) => {
-							updateStatus(0, event);
-						}}
-					/>
-				</InputContainer>
-				<InputContainer>
-					攻击百分比：
-					<StyledInput
-						value={values[1]}
-						onChange={(event) => {
-							updateStatus(1, event);
-						}}
-					/>
-					%
-				</InputContainer>
-				<InputContainer>
-					暴击率：
-					<StyledInput
-						value={values[2]}
-						onChange={(event) => {
-							updateStatus(2, event);
-						}}
-					/>
-					%
-				</InputContainer>
-				<InputContainer>
-					暴击伤害：
-					<StyledInput
-						value={values[3]}
-						onChange={(event) => {
-							updateStatus(3, event);
-						}}
-					/>
-					%
-				</InputContainer>
-				<InputContainer>
-					伤害加成：
-					<StyledInput
-						value={values[4]}
-						onChange={(event) => {
-							updateStatus(4, event);
-						}}
-					/>
-					%
-				</InputContainer>
-				<InputContainer>
-					元素精通：
-					<StyledInput
-						value={values[5]}
-						onChange={(event) => {
-							updateStatus(5, event);
-						}}
-					/>
-				</InputContainer>
-				<InputContainer>
-					元素反应加成：
-					<StyledInput
-						value={values[6]}
-						onChange={(event) => {
-							updateStatus(6, event);
-						}}
-					/>
-				</InputContainer>
-			</>
-		);
-	} else if (type === 'modifier') {
-		return (
-			<>
-				<InputContainer>
-					基础倍率：
-					<StyledInput
-						value={values[0]}
-						onChange={(event) => {
-							updateStatus(0, event);
-						}}
-					/>
-					%
-				</InputContainer>
-				<InputContainer>
-					倍率加成：
-					<StyledInput
-						value={values[1]}
-						onChange={(event) => {
-							updateStatus(1, event);
-						}}
-					/>
-					%
-				</InputContainer>
-			</>
-		);
-	} else if (type === 'monster') {
-		return (
-			<>
-				<InputContainer>
-					抗性：
-					<StyledInput
-						value={values[0]}
-						onChange={(event) => {
-							updateStatus(0, event);
-						}}
-					/>
-					%
-				</InputContainer>
-				<InputContainer>
-					减抗：
-					<StyledInput
-						value={values[1]}
-						onChange={(event) => {
-							updateStatus(1, event);
-						}}
-					/>
-					%
-				</InputContainer>
-				<InputContainer>
-					角色等级：
-					<StyledInput
-						value={values[2]}
-						onChange={(event) => {
-							updateStatus(2, event);
-						}}
-					/>
-				</InputContainer>
-				<InputContainer>
-					怪物等级：
-					<StyledInput
-						value={values[3]}
-						onChange={(event) => {
-							updateStatus(3, event);
-						}}
-					/>
-				</InputContainer>
-				<InputContainer>
-					减防：
-					<StyledInput
-						value={values[4]}
-						onChange={(event) => {
-							updateStatus(4, event);
-						}}
-					/>
-					%
-				</InputContainer>
-			</>
-		);
-	}
+			))}
+		</>
+	);
 };
 
 const InputContainer = styled.div`

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 
 import SaveBox from './SaveBox';
@@ -32,59 +32,72 @@ const Calculator = () => {
 		swirlDamage: 0,
 		shieldValue: 0,
 	});
-	const [cNames, setCNames] = useState([]);
-	const [wNames, setWNames] = useState([]);
-	const [aNames, setANames] = useState([]);
-	const [eNames, setENames] = useState([]);
+	const [advancedMode, setAdvancedMode] = useState(false);
+
+	// for advanced mode
 	const [cValues, setCValues] = useState([0, 0, 5, 50, 0, 0]);
 	const [wValues, setWValues] = useState([0, 0, 0, 0, 0, 0]);
 	const [aValues, setAValues] = useState([0, 0, 0, 0, 0, 0, 0]);
+
+	// for simple mode
+	const [stats, setStats] = useState([2000, 50, 100, 50, 100]);
+
 	const [eValues, setEValues] = useState([0, 0, 0, 0, 0, 0, 0]);
 	const [modifierValues, setModifierValues] = useState([100, 100]);
 	const [monsterValues, setMonsterValues] = useState([10, 0, 90, 90, 0]);
 
-	const computeDamage = () => {
-		const cAtk = parseFloat(cValues[0]);
-		const cAtkP = parseFloat(cValues[1]);
-		const cCrit = parseFloat(cValues[2]);
-		const cCritD = parseFloat(cValues[3]);
-		const cDamage = parseFloat(cValues[4]);
-		const wAtk = parseFloat(wValues[0]);
-		const wAtkP = parseFloat(wValues[1]);
-		const wCrit = parseFloat(wValues[2]);
-		const wCritD = parseFloat(wValues[3]);
-		const wDamage = parseFloat(wValues[4]);
-		const aAtk = parseFloat(aValues[0]);
-		const aAtkP = parseFloat(aValues[1]);
-		const aCrit = parseFloat(aValues[2]);
-		const aCritD = parseFloat(aValues[3]);
-		const aDamage = parseFloat(aValues[4]);
-		const eAtk = parseFloat(eValues[0]);
-		const eAtkP = parseFloat(eValues[1]);
-		const eCrit = parseFloat(eValues[2]);
-		const eCritD = parseFloat(eValues[3]);
-		const eDamage = parseFloat(eValues[4]);
-		const skillRate = parseFloat(modifierValues[0]) / 100;
-		const skillRateModifier = parseFloat(modifierValues[1]) / 100;
+	const computeDamage = useCallback(() => {
+		let totalAtk, totalCrit, totalCritDamage, totalDamagePercent, elementalMastery, elementBoost;
+		if (advancedMode) {
+			const cAtk = parseFloat(cValues[0]);
+			const cAtkP = parseFloat(cValues[1]);
+			const cCrit = parseFloat(cValues[2]);
+			const cCritD = parseFloat(cValues[3]);
+			const cDamageP = parseFloat(cValues[4]);
+			const wAtk = parseFloat(wValues[0]);
+			const wAtkP = parseFloat(wValues[1]);
+			const wCrit = parseFloat(wValues[2]);
+			const wCritD = parseFloat(wValues[3]);
+			const wDamageP = parseFloat(wValues[4]);
+			const aAtk = parseFloat(aValues[0]);
+			const aAtkP = parseFloat(aValues[1]);
+			const aCrit = parseFloat(aValues[2]);
+			const aCritD = parseFloat(aValues[3]);
+			const aDamageP = parseFloat(aValues[4]);
+			const eAtk = parseFloat(eValues[0]);
+			const eAtkP = parseFloat(eValues[1]);
+			const eCrit = parseFloat(eValues[2]);
+			const eCritD = parseFloat(eValues[3]);
+			const eDamageP = parseFloat(eValues[4]);
+			totalAtk = (cAtk + wAtk) * (1 + (cAtkP + wAtkP + aAtkP + eAtkP) / 100) + aAtk + eAtk;
+			totalCrit = Math.min((cCrit + wCrit + aCrit + eCrit) / 100, 1);
+			totalCritDamage = (cCritD + wCritD + aCritD + eCritD + 100) / 100;
+			totalDamagePercent = (cDamageP + wDamageP + aDamageP + eDamageP + 100) / 100;
+			elementalMastery =
+				parseFloat(cValues[5]) + parseFloat(wValues[5]) + parseFloat(aValues[5]) + parseFloat(eValues[5]);
+			elementBoost = parseFloat(aValues[6]);
+		} else {
+			totalAtk = parseFloat(stats[0]);
+			totalCrit = Math.min(parseFloat(stats[1]) / 100, 1);
+			totalCritDamage = parseFloat(stats[2]) / 100 + 1;
+			totalDamagePercent = parseFloat(stats[3]) / 100 + 1;
+			elementalMastery = parseFloat(stats[4]);
+			elementBoost = 0;
+		}
+		console.log(totalAtk, totalCrit, totalCritDamage, totalDamagePercent, elementalMastery);
+
+		const skillRatio = parseFloat(modifierValues[0]) / 100;
+		const skillRatioModifier = parseFloat(modifierValues[1]) / 100;
 		const resist = parseFloat(monsterValues[0]) - parseFloat(monsterValues[1]);
 		const cLevel = parseInt(monsterValues[2]);
 		const eLevel = parseInt(monsterValues[3]);
-		const elementalMastery =
-			parseFloat(cValues[5]) + parseFloat(wValues[5]) + parseFloat(aValues[5]) + parseFloat(eValues[5]);
-		const elementBoost = parseFloat(aValues[6]);
-
-		const totalAtk = (cAtk + wAtk) * (1 + (cAtkP + wAtkP + aAtkP + eAtkP) / 100) + aAtk + eAtk;
-		const totalCrit = Math.min((cCrit + wCrit + aCrit + eCrit) / 100, 1);
-		const totalCritD = (cCritD + wCritD + aCritD + eCritD + 100) / 100;
-		const totalDamageBonus = (cDamage + wDamage + aDamage + eDamage + 100) / 100;
-
 		const defenceRate = (cLevel + 100) / (cLevel + 100 + (eLevel + 100) * (1 - parseFloat(monsterValues[4]) / 100));
 		const resistMultiplier = resist >= 0 ? (100 - resist) / 100 : (100 - resist / 2) / 100;
 
 		const finalDamage =
-			totalAtk * skillRate * skillRateModifier * totalDamageBonus * resistMultiplier * defenceRate;
-		const finalCritDamage = finalDamage * totalCritD;
-		const finalExpDamage = finalDamage * (1 - totalCrit) + finalDamage * totalCritD * totalCrit;
+			totalAtk * skillRatio * skillRatioModifier * totalDamagePercent * resistMultiplier * defenceRate;
+		const finalCritDamage = finalDamage * totalCritDamage;
+		const finalExpDamage = finalDamage * (1 - totalCrit) + finalCritDamage * totalCrit;
 
 		const transformativeRate = (16 * elementalMastery) / (elementalMastery + 2000) + 1 + elementBoost;
 		const amplifyingRate = ((25 / 9) * elementalMastery) / (elementalMastery + 1400) + 1 + elementBoost;
@@ -108,93 +121,15 @@ const Calculator = () => {
 			swirlDamage: transformDamage * 1.2,
 			shieldValue: shieldRate,
 		});
-	};
-
-	const saveModel = (type, name, values) => {
-		if (name === '') {
-			return;
-		}
-		let models = localStorage.getItem('models');
-		models = JSON.parse(models);
-		models[type][name] = values;
-		localStorage.setItem('models', JSON.stringify(models));
-		updateNames();
-	};
-
-	const loadModel = (type, name) => {
-		let models = localStorage.getItem('models');
-		models = JSON.parse(models);
-		return models[type][name];
-	};
-
-	const deleteModel = (type, name) => {
-		let models = localStorage.getItem('models');
-		models = JSON.parse(models);
-		delete models[type][name];
-		localStorage.setItem('models', JSON.stringify(models));
-		updateNames();
-	};
-
-	const saveC = (name) => {
-		saveModel('character', name, cValues);
-	};
-
-	const loadC = (name) => {
-		const model = loadModel('character', name);
-		if (!model) {
-			return;
-		}
-		setCValues(model);
-	};
-
-	const saveW = (name) => {
-		saveModel('weapon', name, wValues);
-	};
-
-	const loadW = (name) => {
-		const model = loadModel('weapon', name);
-		if (!model) {
-			return;
-		}
-		setWValues(model);
-	};
-
-	const saveA = (name) => {
-		saveModel('artifact', name, aValues);
-	};
-
-	const loadA = (name) => {
-		const model = loadModel('artifact', name);
-		if (!model) {
-			return;
-		}
-		setAValues(model);
-	};
-
-	const saveE = (name) => {
-		saveModel('extra', name, eValues);
-	};
-
-	const loadE = (name) => {
-		const model = loadModel('extra', name);
-		if (!model) {
-			return;
-		}
-		setEValues(model);
-	};
-
-	const updateNames = () => {
-		let models = localStorage.getItem('models');
-		models = JSON.parse(models);
-		setCNames(Object.keys(models['character']));
-		setWNames(Object.keys(models['weapon']));
-		setANames(Object.keys(models['artifact']));
-		setENames(Object.keys(models['extra']));
-	};
+	}, [cValues, wValues, aValues, eValues, modifierValues, monsterValues, stats, advancedMode]);
 
 	useEffect(() => {
-		const modelsJson = localStorage.getItem('models');
-		const models = modelsJson ? JSON.parse(modelsJson) : {};
+		computeDamage();
+	}, [cValues, wValues, aValues, eValues, modifierValues, monsterValues, stats, computeDamage]);
+
+	useEffect(() => {
+		const modelsJSON = localStorage.getItem('models');
+		const models = modelsJSON ? JSON.parse(modelsJSON) : {};
 		models.character = models.character ?? {};
 		models.weapon = models.weapon ?? {};
 		models.artifact = models.artifact ?? {};
@@ -221,10 +156,9 @@ const Calculator = () => {
 			});
 		}
 		localStorage.setItem('models', JSON.stringify(models));
-		updateNames();
 	}, []);
 
-	return (
+	const statsPanel = advancedMode ? (
 		<>
 			<StatusContainer
 				style={{
@@ -232,20 +166,9 @@ const Calculator = () => {
 				}}>
 				<Title>
 					角色
-					<SaveBox
-						save={saveC}
-						load={loadC}
-						del={(name) => deleteModel('character', name)}
-						names={cNames}
-						idKey={0}
-					/>
+					<SaveBox type="character" values={cValues} setValues={setCValues} />
 				</Title>
-				<StatusInputs
-					type={'character'}
-					values={cValues}
-					setValues={setCValues}
-					computeDamage={computeDamage}
-				/>
+				<StatusInputs type="character" values={cValues} setValues={setCValues} />
 			</StatusContainer>
 			<StatusContainer
 				style={{
@@ -253,15 +176,9 @@ const Calculator = () => {
 				}}>
 				<Title>
 					武器
-					<SaveBox
-						save={saveW}
-						load={loadW}
-						del={(name) => deleteModel('weapon', name)}
-						names={wNames}
-						idKey={1}
-					/>
+					<SaveBox type="weapon" values={wValues} setValues={setWValues} />
 				</Title>
-				<StatusInputs type={'weapon'} values={wValues} setValues={setWValues} computeDamage={computeDamage} />
+				<StatusInputs type="weapon" values={wValues} setValues={setWValues} />
 			</StatusContainer>
 			<StatusContainer
 				style={{
@@ -269,15 +186,9 @@ const Calculator = () => {
 				}}>
 				<Title>
 					圣遗物
-					<SaveBox
-						save={saveA}
-						load={loadA}
-						del={(name) => deleteModel('artifact', name)}
-						names={aNames}
-						idKey={2}
-					/>
+					<SaveBox type="artifact" values={aValues} setValues={setAValues} />
 				</Title>
-				<StatusInputs type={'artifact'} values={aValues} setValues={setAValues} computeDamage={computeDamage} />
+				<StatusInputs type="artifact" values={aValues} setValues={setAValues} />
 			</StatusContainer>
 			<StatusContainer
 				style={{
@@ -285,39 +196,46 @@ const Calculator = () => {
 				}}>
 				<Title>
 					其他
-					<SaveBox
-						save={saveE}
-						load={loadE}
-						del={(name) => deleteModel('extra', name)}
-						names={eNames}
-						idKey={3}
-					/>
+					<SaveBox type="extra" values={eValues} setValues={setEValues} />
 				</Title>
-				<StatusInputs type={'extra'} values={eValues} setValues={setEValues} computeDamage={computeDamage} />
+				<StatusInputs type="extra" values={eValues} setValues={setEValues} />
 			</StatusContainer>
+		</>
+	) : (
+		<>
+			<StatusContainer
+				style={{
+					backgroundImage: `url(${AyakaBack})`,
+				}}>
+				<Title>人物面板</Title>
+				<StatusInputs type={'simple'} values={stats} setValues={setStats} />
+			</StatusContainer>
+		</>
+	);
+	return (
+		<>
+			<ButtonSwitch>
+				<div className={advancedMode ? '' : 'selected'} onClick={() => setAdvancedMode(false)}>
+					简单
+				</div>
+				<div className={advancedMode ? 'selected' : ''} onClick={() => setAdvancedMode(true)}>
+					高级
+				</div>
+			</ButtonSwitch>
+			{statsPanel}
 			<StatusContainer
 				style={{
 					backgroundImage: `url(${SakuraBack})`,
 				}}>
-				<Title>倍率</Title>
-				<StatusInputs
-					type={'modifier'}
-					values={modifierValues}
-					setValues={setModifierValues}
-					computeDamage={computeDamage}
-				/>
+				<Title>技能倍率</Title>
+				<StatusInputs type={'modifier'} values={modifierValues} setValues={setModifierValues} />
 			</StatusContainer>
 			<StatusContainer
 				style={{
 					backgroundImage: `url(${SayuBack})`,
 				}}>
 				<Title>怪物</Title>
-				<StatusInputs
-					type={'monster'}
-					values={monsterValues}
-					setValues={setMonsterValues}
-					computeDamage={computeDamage}
-				/>
+				<StatusInputs type={'monster'} values={monsterValues} setValues={setMonsterValues} />
 			</StatusContainer>
 			<CalculateButtonRow>
 				<CalculateButton onClick={computeDamage}>计算</CalculateButton>
@@ -385,13 +303,31 @@ const ResultRow = styled.div`
 	justify-content: center;
 `;
 const ResultContainer = styled.div`
-	height: 180px;
+	min-height: 180px;
 	width: 400px;
 	display: flex;
 	align-items: center;
-	padding-left: 4em;
+	padding: 1em 2em;
 	font-weight: bold;
 	background-size: cover;
+`;
+const ButtonSwitch = styled.div`
+	margin: 0 auto;
+	width: 8em;
+	display: flex;
+	border: 1px solid #333333;
+	justify-content: center;
+	margin-bottom: 0.5em;
+
+	div {
+		flex: 1;
+		background: #cccccc;
+		cursor: pointer;
+		text-align: center;
+	}
+	div.selected {
+		background-color: #eeeeee;
+	}
 `;
 
 export default Calculator;

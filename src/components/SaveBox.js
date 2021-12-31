@@ -1,8 +1,46 @@
 import styled from 'styled-components';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
-const SaveBox = ({ save, load, del, names, idKey }) => {
+const SaveBox = ({ type, values, setValues }) => {
 	const [name, setName] = useState('');
+	const [names, setNames] = useState([]);
+
+	const getModels = useCallback(() => {
+		const modelJSON = localStorage.getItem('models');
+		const models = modelJSON ? JSON.parse(modelJSON) : {};
+		models[type] = models[type] ?? {};
+		return models;
+	}, [type]);
+
+	useEffect(() => {
+		const models = getModels();
+		setNames(Object.keys(models[type]));
+	}, [getModels, type]);
+
+	const saveModel = () => {
+		if (name === '') {
+			return;
+		}
+		const models = getModels();
+		models[type][name] = values;
+		localStorage.setItem('models', JSON.stringify(models));
+		setNames(Object.keys(models[type]));
+	};
+
+	const loadModel = () => {
+		const models = getModels();
+		if (models[type][name]) {
+			setValues(models[type][name]);
+		}
+	};
+
+	const deleteModel = () => {
+		const models = getModels();
+		delete models[type][name];
+		localStorage.setItem('models', JSON.stringify(models));
+		setNames(Object.keys(models[type]));
+		setName('');
+	};
 
 	return (
 		<>
@@ -12,20 +50,20 @@ const SaveBox = ({ save, load, del, names, idKey }) => {
 					setName(event.target.value);
 				}}
 				type="text"
-				list={`models${idKey}`}
+				list={`models${type}`}
 			/>
-			<datalist id={`models${idKey}`}>
+			<datalist id={`models${type}`}>
 				{names.map((name, i) => {
 					return <option value={name} key={i} />;
 				})}
 			</datalist>
-			<StyledButton onClick={() => save(name)} style={{ background: '#3ba4ed' }}>
+			<StyledButton onClick={saveModel} style={{ background: '#3ba4ed' }}>
 				保存
 			</StyledButton>
-			<StyledButton onClick={() => load(name)} style={{ background: '#3ced57' }}>
+			<StyledButton onClick={loadModel} style={{ background: '#3ced57' }}>
 				读取
 			</StyledButton>
-			<StyledButton onClick={() => del(name)} style={{ background: '#ec1a1b' }}>
+			<StyledButton onClick={deleteModel} style={{ background: '#ec1a1b' }}>
 				删除
 			</StyledButton>
 		</>
