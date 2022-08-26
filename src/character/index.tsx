@@ -47,14 +47,14 @@ const CharacterSelector = ({ setCharacter }) => {
 const Container = styled.div`
     &&::after {
         position: relative;
-        left: -100px;
+        left: -160px;
         top: 2px;
         content: "${(props) => props.displayName}";
     }
 `;
 
 const StyledInput = styled.input`
-    width: 100px;
+    width: 160px;
 `;
 
 export default CharacterSelector;

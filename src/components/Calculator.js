@@ -54,8 +54,15 @@ const Calculator = () => {
     const [characterResult, setCharacterResult] = useState([]);
 
     const computeCharacterDamage = () => {
-        if (currentMode === "character") {
-            if (character && weapon) setCharacterResult(testDamage(character, weapon));
+        if (currentMode === "character" && character && weapon) {
+            const resist = parseFloat(monsterValues[0]) - parseFloat(monsterValues[1]);
+            const cLevel = parseInt(monsterValues[2]);
+            const eLevel = parseInt(monsterValues[3]);
+            const defenceRate =
+                (cLevel + 100) /
+                (cLevel + 100 + (eLevel + 100) * (1 - parseFloat(monsterValues[4]) / 100));
+            const resistMultiplier = resist >= 0 ? 1 - resist / 100 : 1 - resist / 200;
+            setCharacterResult(testDamage(character, weapon, defenceRate, resistMultiplier));
             return;
         }
     };

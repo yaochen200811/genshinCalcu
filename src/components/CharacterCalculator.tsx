@@ -156,7 +156,13 @@ const artifactMainToString = (statusBoost1, statusBoost2, statusBoost3) => {
     return string;
 };
 
-const calculateDamage = (originStatus: Status, character: Character, weapon: Weapon) => {
+const calculateDamage = (
+    originStatus: Status,
+    character: Character,
+    weapon: Weapon,
+    defenceRate: number,
+    resistMultiplier: number,
+) => {
     const Cbase = character.baseStatus;
     const Wbase = weapon.baseStatus;
     const originATK =
@@ -213,12 +219,14 @@ const calculateDamage = (originStatus: Status, character: Character, weapon: Wea
         (16 * elementalMastery) / (elementalMastery + 2000) + 1 + reactionBoost;
     const amplifyingRate =
         ((25 / 9) * elementalMastery) / (elementalMastery + 1400) + 1 + reactionBoost;
-    const transformDamage = BASE_TRANSFORMATIVE_DAMAGE[90] * transformativeRate;
+    const transformDamage = BASE_TRANSFORMATIVE_DAMAGE[90] * transformativeRate * resistMultiplier;
     const shieldRate =
         ((4.44 * elementalMastery) / (elementalMastery + 1400) + 1 + reactionBoost) * 100;
 
     const quickenbase =
-        1447 * (1 + (5 * elementalMastery) / (elementalMastery + 1200) + reactionBoost);
+        1447 *
+        (1 + (5 * elementalMastery) / (elementalMastery + 1200) + reactionBoost) *
+        resistMultiplier;
     const quickenCrit = quickenbase * totalCritDamage;
     const quickenExp = quickenbase * (1 - totalCrit) + quickenCrit * totalCrit;
 
@@ -230,7 +238,10 @@ const calculateDamage = (originStatus: Status, character: Character, weapon: Wea
         recharge: totalRecharge,
         getExpectedDamage: (totalAtk, skillRatio, skillRatioModifier, extraDamage) => {
             const damage =
-                (totalAtk * skillRatio * skillRatioModifier + extraDamage) * totalDamagePercent;
+                (totalAtk * skillRatio * skillRatioModifier + extraDamage) *
+                totalDamagePercent *
+                defenceRate *
+                resistMultiplier;
             const critDamage = damage * totalCritDamage;
             return damage * (1 - totalCrit) + critDamage * totalCrit;
         },
@@ -249,7 +260,12 @@ const calculateDamage = (originStatus: Status, character: Character, weapon: Wea
     return character.parseOutput(baseResult);
 };
 
-export const testDamage = (character: Character, weapon: Weapon) => {
+export const testDamage = (
+    character: Character,
+    weapon: Weapon,
+    defenceRate: number,
+    resistMultiplier: number,
+) => {
     let results: any = [];
     artifactStatus1.forEach((statusBoost1) => {
         artifactStatus2.forEach((statusBoost2) => {
@@ -262,7 +278,13 @@ export const testDamage = (character: Character, weapon: Weapon) => {
                     currentStatus = applyStatusBoost(currentStatus, statusBoost3);
                     currentStatus = applyStatusBoost(currentStatus, artifactSubStatus);
                     currentStatus = applyStatusBoost(currentStatus, setBoost);
-                    let result = calculateDamage(currentStatus, character, weapon);
+                    let result = calculateDamage(
+                        currentStatus,
+                        character,
+                        weapon,
+                        defenceRate,
+                        resistMultiplier,
+                    );
                     result.push(
                         `${setBoost.name} - ${artifactMainToString(
                             statusBoost1,
