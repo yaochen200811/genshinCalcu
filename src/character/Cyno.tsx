@@ -48,7 +48,9 @@ const Cyno: Character = {
                 2,
             )}，渡荒之雷：${eExDamage.toFixed(
                 2,
-            )} X 3，原激化伤害：${baseResult.QuickenThunder.toFixed(2)} X 4`,
+            )} X 3，原激化伤害：${baseResult.QuickenThunder.toFixed(2)} X 4 ${
+                baseResult.Hyperbloom
+            }`,
         ];
     },
 };

@@ -3,7 +3,7 @@ import styled from "styled-components";
 
 import SaveBox from "./SaveBox";
 import StatusInputs from "./StatusInputs";
-import { BASE_TRANSFORMATIVE_DAMAGE } from "./Consts";
+import { BASE_TRANSFORMATIVE_DAMAGE, 超激化90级系数, 蔓激化90级系数 } from "./Consts";
 import { testDamage } from "./CharacterCalculator";
 import CharacterSelector from "../character";
 import WeaponSelector from "../weapon";
@@ -34,6 +34,12 @@ const Calculator = () => {
         superconductDamage: 0,
         swirlDamage: 0,
         shieldValue: 0,
+        超激化额外伤害: 0,
+        超激化暴击伤害: 0,
+        超激化伤害期望: 0,
+        蔓激化额外伤害: 0,
+        蔓激化暴击伤害: 0,
+        蔓激化伤害期望: 0,
     });
     const [currentMode, setCurrentMode] = useState("simple");
 
@@ -145,6 +151,23 @@ const Calculator = () => {
         const shieldRate =
             ((4.44 * elementalMastery) / (elementalMastery + 1400) + 1 + reactionBoost) * 100;
 
+        const 超激化额外伤害 =
+            超激化90级系数 *
+            (1 + (5 * elementalMastery) / (elementalMastery + 1200)) *
+            totalDamagePercent *
+            resistMultiplier *
+            defenceRate;
+        const 超激化暴击伤害 = 超激化额外伤害 * totalCritDamage;
+        const 超激化伤害期望 = 超激化额外伤害 * (1 - totalCrit) + 超激化暴击伤害 * totalCrit;
+        const 蔓激化额外伤害 =
+            蔓激化90级系数 *
+            (1 + (5 * elementalMastery) / (elementalMastery + 1200)) *
+            totalDamagePercent *
+            resistMultiplier *
+            defenceRate;
+        const 蔓激化暴击伤害 = 蔓激化额外伤害 * totalCritDamage;
+        const 蔓激化伤害期望 = 蔓激化额外伤害 * (1 - totalCrit) + 蔓激化暴击伤害 * totalCrit;
+
         setResults({
             damage: damage,
             critDamage: critDamage,
@@ -161,6 +184,12 @@ const Calculator = () => {
             superconductDamage: transformDamage,
             swirlDamage: transformDamage * 1.2,
             shieldValue: shieldRate,
+            超激化额外伤害,
+            超激化暴击伤害,
+            超激化伤害期望,
+            蔓激化额外伤害,
+            蔓激化暴击伤害,
+            蔓激化伤害期望,
         });
     }, [cValues, wValues, aValues, eValues, modifierValues, monsterValues, stats, currentMode]);
 
@@ -321,6 +350,12 @@ const Calculator = () => {
                             <div>2倍反应基础伤害：{results.x2damage.toFixed(2)}</div>
                             <div>2倍反应暴击伤害：{results.x2critDamage.toFixed(2)}</div>
                             <div>2倍反应期望伤害：{results.x2expDamage.toFixed(2)}</div>
+                            <div>超激化额外伤害：{results.超激化额外伤害.toFixed(2)}</div>
+                            <div>超激化暴击伤害：{results.超激化暴击伤害.toFixed(2)}</div>
+                            <div>超激化伤害期望：{results.超激化伤害期望.toFixed(2)}</div>
+                            <div>蔓激化额外伤害：{results.蔓激化额外伤害.toFixed(2)}</div>
+                            <div>蔓激化暴击伤害：{results.蔓激化暴击伤害.toFixed(2)}</div>
+                            <div>蔓激化伤害期望：{results.蔓激化伤害期望.toFixed(2)}</div>
                         </div>
                         <div style={{ marginLeft: "1em" }}>
                             <div>超载伤害：{results.overloadedDamage.toFixed(2)}</div>
