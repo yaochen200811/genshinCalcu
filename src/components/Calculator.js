@@ -16,6 +16,7 @@ import SayuBack from "../image/SayuBack.png";
 import AyakaBack from "../image/AyakaBack.png";
 import DionaBack from "../image/DionaBack.png";
 import SucroseBack from "../image/SucroseBack.png";
+import { getExpectedDamage } from "../util";
 
 const Calculator = () => {
     const [results, setResults] = useState({
@@ -40,6 +41,8 @@ const Calculator = () => {
         蔓激化额外伤害: 0,
         蔓激化暴击伤害: 0,
         蔓激化伤害期望: 0,
+        绽放伤害: 0,
+        超烈绽放伤害: 0,
     });
     const [currentMode, setCurrentMode] = useState("simple");
 
@@ -134,11 +137,12 @@ const Calculator = () => {
             (cLevel + 100 + (eLevel + 100) * (1 - parseFloat(monsterValues[4]) / 100));
         const resistMultiplier = resist >= 0 ? 1 - resist / 100 : 1 - resist / 200;
 
-        const damage =
-            (totalAtk * skillRatio * skillRatioModifier + extraDamage) *
-            totalDamagePercent *
-            resistMultiplier *
-            defenceRate;
+        const damageAfterMultipliers = (damage) =>
+            damage * totalDamagePercent * resistMultiplier * defenceRate;
+
+        const damage = damageAfterMultipliers(
+            totalAtk * skillRatio * skillRatioModifier + extraDamage,
+        );
         const critDamage = damage * totalCritDamage;
         const expectedDamage = damage * (1 - totalCrit) + critDamage * totalCrit;
 
@@ -151,22 +155,16 @@ const Calculator = () => {
         const shieldRate =
             ((4.44 * elementalMastery) / (elementalMastery + 1400) + 1 + reactionBoost) * 100;
 
-        const 超激化额外伤害 =
-            超激化90级系数 *
-            (1 + (5 * elementalMastery) / (elementalMastery + 1200)) *
-            totalDamagePercent *
-            resistMultiplier *
-            defenceRate;
+        const 超激化额外伤害 = damageAfterMultipliers(
+            超激化90级系数 * (1 + (5 * elementalMastery) / (elementalMastery + 1200)),
+        );
         const 超激化暴击伤害 = 超激化额外伤害 * totalCritDamage;
-        const 超激化伤害期望 = 超激化额外伤害 * (1 - totalCrit) + 超激化暴击伤害 * totalCrit;
-        const 蔓激化额外伤害 =
-            蔓激化90级系数 *
-            (1 + (5 * elementalMastery) / (elementalMastery + 1200)) *
-            totalDamagePercent *
-            resistMultiplier *
-            defenceRate;
+        const 超激化伤害期望 = getExpectedDamage(超激化额外伤害, totalCrit, totalCritDamage);
+        const 蔓激化额外伤害 = damageAfterMultipliers(
+            蔓激化90级系数 * (1 + (5 * elementalMastery) / (elementalMastery + 1200)),
+        );
         const 蔓激化暴击伤害 = 蔓激化额外伤害 * totalCritDamage;
-        const 蔓激化伤害期望 = 蔓激化额外伤害 * (1 - totalCrit) + 蔓激化暴击伤害 * totalCrit;
+        const 蔓激化伤害期望 = getExpectedDamage(蔓激化额外伤害, totalCrit, totalCritDamage);
 
         setResults({
             damage: damage,
@@ -190,6 +188,8 @@ const Calculator = () => {
             蔓激化额外伤害,
             蔓激化暴击伤害,
             蔓激化伤害期望,
+            绽放伤害: transformDamage * 4,
+            超烈绽放伤害: transformDamage * 6,
         });
     }, [cValues, wValues, aValues, eValues, modifierValues, monsterValues, stats, currentMode]);
 
@@ -364,6 +364,8 @@ const Calculator = () => {
                             <div>超导伤害：{results.superconductDamage.toFixed(2)}</div>
                             <div>扩散伤害：{results.swirlDamage.toFixed(2)}</div>
                             <div>结晶盾强度：{results.shieldValue.toFixed(2)}%</div>
+                            <div>绽放伤害：{results.绽放伤害.toFixed(2)}</div>
+                            <div>超/烈绽放伤害：{results.超烈绽放伤害.toFixed(2)}</div>
                         </div>
                     </ResultContainer>
                 </>
@@ -468,7 +470,7 @@ const ResultRow = styled.div`
 `;
 const ResultContainer = styled.div`
     min-height: 180px;
-    width: 400px;
+    width: 500px;
     display: flex;
     align-items: center;
     padding: 1em 2em;

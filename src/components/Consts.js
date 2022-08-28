@@ -13,5 +13,5 @@ export const BASE_TRANSFORMATIVE_DAMAGE = {
     70: 383,
 };
 
-export const 超激化90级系数 = 1664;
-export const 蔓激化90级系数 = 1808;
+export const 超激化90级系数 = 1663.9;
+export const 蔓激化90级系数 = 1808.5;
